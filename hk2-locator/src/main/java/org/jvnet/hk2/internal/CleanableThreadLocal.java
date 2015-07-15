@@ -42,7 +42,9 @@ package org.jvnet.hk2.internal;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Set;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.WeakHashMap;
 
 /**
@@ -95,9 +97,9 @@ class CleanableThreadLocal<T> extends ThreadLocal<T> {
      * Thread}) that accessed the value of this ThreadLocal.
      */
     public void cleanThreadLocal() {
-        final Set<Thread> threads;
+        final List<Thread> threads;
         synchronized (this) {
-            threads = accessingThreads.keySet();
+            threads = new LinkedList<Thread>(accessingThreads.keySet());
             accessingThreads.clear();
         }
         try {
@@ -107,7 +109,7 @@ class CleanableThreadLocal<T> extends ThreadLocal<T> {
         }
     }
 
-    private void cleanThreadLocal(Set<Thread> threads)
+    private void cleanThreadLocal(Collection<Thread> threads)
             throws NoSuchFieldException, ClassNotFoundException, NoSuchMethodException {
         // Thread.threadLocals are package-private, need to access it by using reflection
         Field threadFieldThreadLocals = Thread.class.getDeclaredField("threadLocals");
