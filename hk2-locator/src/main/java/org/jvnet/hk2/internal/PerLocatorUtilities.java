@@ -52,28 +52,29 @@ import org.glassfish.hk2.utilities.reflection.Pretty;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * These utilities are per service locator.  Another service locator may have a different view
+ * These utilities are per service locator. Another service locator may have a different view
  * of the caches stored here
  * 
  * @author jwells
  *
  */
 public class PerLocatorUtilities {
+
     /** Must not be static, otherwise it can leak when using thread pools */
-    private ThreadLocal<WeakHashMap<Class<?>, String>> threadLocalAutoAnalyzerNameCache =
-            new ThreadLocal<WeakHashMap<Class<?>, String>>() {
+    private final CleanableThreadLocal<WeakHashMap<Class<?>, String>> threadLocalAutoAnalyzerNameCache =
+            new CleanableThreadLocal<WeakHashMap<Class<?>,String>>() {
                 @Override
-                protected WeakHashMap<Class<?>, String> initialValue() {
+                protected WeakHashMap<Class<?>, String> cleanableInitialValue() {
                     return new WeakHashMap<Class<?>, String>();
                 }
             };
 
     /** Must not be static, otherwise it can leak when using thread pools */
-    private ThreadLocal<WeakHashMap<AnnotatedElement, SoftAnnotatedElementAnnotationInfo>>
+    private final CleanableThreadLocal<WeakHashMap<AnnotatedElement, SoftAnnotatedElementAnnotationInfo>>
         threadLocalAnnotationCache =
-            new ThreadLocal<WeakHashMap<AnnotatedElement, SoftAnnotatedElementAnnotationInfo>>() {
+            new CleanableThreadLocal<WeakHashMap<AnnotatedElement, SoftAnnotatedElementAnnotationInfo>>() {
                 @Override
-                protected WeakHashMap<AnnotatedElement, SoftAnnotatedElementAnnotationInfo> initialValue() {
+                protected WeakHashMap<AnnotatedElement, SoftAnnotatedElementAnnotationInfo> cleanableInitialValue() {
                     return new WeakHashMap<AnnotatedElement, SoftAnnotatedElementAnnotationInfo>();
                 }
             };
@@ -210,11 +211,11 @@ public class PerLocatorUtilities {
     
     public void shutdown() {
         releaseCaches();
-        
-        threadLocalAutoAnalyzerNameCache = null;
-        threadLocalAnnotationCache = null;
+
+        threadLocalAnnotationCache.cleanThreadLocal();
+        threadLocalAutoAnalyzerNameCache.cleanThreadLocal();
     }
-    
+
     public ProxyUtilities getProxyUtilities() {
         if (proxyUtilities != null) return proxyUtilities;
         
